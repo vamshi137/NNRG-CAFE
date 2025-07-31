@@ -4,6 +4,7 @@
 <head>
     <?php include('head.php'); ?>
     <meta charset="UTF-8">
+<<<<<<< HEAD
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="css/login.css" rel="stylesheet">
     <title>About Us | FOODCAVE</title>
@@ -321,6 +322,13 @@
             }
         }
     </style>
+=======
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/login.css" rel="stylesheet">
+
+    <title>About Us | FOODCAVE</title>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
 </head>
 
 <body class="d-flex flex-column h-100">
@@ -339,6 +347,7 @@
             </div>
         </div>
     </header>
+<<<<<<< HEAD
 
     <div class="container mt-5 pt-5">
         <!-- Main Hero Section -->
@@ -449,9 +458,24 @@
     </a>
 </div>
 
+=======
+    <div class="mt-5"></div>
+    <div class="container form-signin text-center restricted mt-auto">
+            <i class="mt-4 bi bi-telephone-fill text-success h1 display-2"></i>
+            <h3 class="mt-2 mb-3 fw-normal text-bold">About Us</h3>
+            <h4 class="mt-2 mb-3 fw-normal ">NNRG College of Engineering</h4>
+            <p class="mt-2 mb-3 fw-normal h6 ">Department Of Computer Science and Engineering</p>
+            <p class="mb-3 fw-bold text-bold text-wrap">The Alpha Achievers</p>
+            <h4 class="mt-2 mb-3 fw-normal ">Guide Name</h4><p class="mt-2 mb-3 fw-normal h6 ">Mrs.N.Anusha</p>
+            <a class="btn btn-success btn-sm w-50" href="index.php">Return To Home</a>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
     </div>
 
     <?php include('footer.php')?>
 </body>
 
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685

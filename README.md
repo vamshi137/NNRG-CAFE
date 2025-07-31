@@ -29,4 +29,8 @@ FOODCAVE is an online canteen food ordering and management system based on case 
 ## Members
 Yamajala Vamshi - 237Z5A1205
 B.Ganesh Shastri - 227Z1A1209
+<<<<<<< HEAD
 B.dinesh-227Z1A1212
+=======
+
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685

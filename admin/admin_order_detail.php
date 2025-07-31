@@ -17,6 +17,7 @@
     <link href="../css/main.css" rel="stylesheet">
     <link href="../css/menu.css" rel="stylesheet">
     <link href="../img/Color Icon with background.png" rel="icon">
+<<<<<<< HEAD
     <style>
         .info-section {
             border: 2px solid #e9ecef;
@@ -66,6 +67,8 @@
             }
         }
     </style>
+=======
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
     <title>Order Detail | FOODCAVE</title>
 </head>
 
@@ -155,6 +158,7 @@
                 </div>
             </div>
         </div>
+<<<<<<< HEAD
 
         <!-- Customer Details Section -->
         <div class="row mb-4">
@@ -247,11 +251,17 @@
         </div>
 
         <!-- Order Items Section -->
+=======
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
         <div class="row mb-5">
             <div class="col">
                 <div class="row row-cols-1">
                     <div class="col">
+<<<<<<< HEAD
                         <h5 class="fw-light">Menu Items</h5>
+=======
+                        <h5 class="fw-light">Menu</h5>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                     </div>
                     <div class="col row row-cols-1 row-cols-md-2 border-bottom">
                         <?php 
@@ -298,7 +308,13 @@
                                     printf("%.2f INR",$gt_arr["gt"]);
                                 ?>
                             </li>
+<<<<<<< HEAD
                             <li class="list-item fw-light small">Pay by QR</li>
+=======
+                            <li class="list-item fw-light small">Pay by QR
+                                
+                            </li>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                         </ul>
                     </div>
                 </div>

@@ -1,7 +1,10 @@
+<<<<<<< HEAD
 Worked by search
 
 
 
+=======
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
 <!DOCTYPE html>
 <html lang="en" class="h-100">
 
@@ -98,7 +101,11 @@ Worked by search
                 <div class="col mt-2 ms-2 p-2 bg-danger text-white rounded text-start">
                     <i class="bi bi-x-circle ms-2"></i><span class="ms-2 mt-2">Failed to add new customer profile.</span>
                     <span class="me-2 float-end"><a class="text-decoration-none link-light" href="admin_customer_list.php">X</a></span>
+<<<<<<< HEAD
                 </div>\
+=======
+                </div>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
             </div>
             <!-- END FAILED ADD PROFILE -->
             <?php }
@@ -139,10 +146,13 @@ Worked by search
                             <?php } ?>
                         </select>
                     </div>
+<<<<<<< HEAD
                     <div class="col">
                         <input type="text" class="form-control" id="department" name="dept" placeholder="Department/Stream"
                             <?php if(isset($_GET["search"])){?>value="<?php echo $_GET["dept"];?>" <?php } ?>>
                     </div>
+=======
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                     <div class="col-auto">
                         <button type="submit" name="search" value="1" class="btn btn-success">Search</button>
                         <button type="reset" class="btn btn-danger"
@@ -158,15 +168,24 @@ Worked by search
 
         <?php
             if(!isset($_GET["search"])){
+<<<<<<< HEAD
                 $search_query = "SELECT c_id,c_username,c_firstname,c_lastname,c_type,c_email,c_phone,c_department FROM customer;";
+=======
+                $search_query = "SELECT c_id,c_username,c_firstname,c_lastname,c_type,c_email FROM customer;";
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
             }else{
                 $search_un=$_GET["un"];
                 $search_fn=$_GET["fn"];
                 $search_ln=$_GET["ln"];
                 $search_ut=$_GET["ut"];
+<<<<<<< HEAD
                 $search_dept=$_GET["dept"];
                 $search_query = "SELECT c_id,c_username,c_firstname,c_lastname,c_type,c_email,c_phone,c_department FROM customer
                 WHERE c_username LIKE '%{$search_un}%' AND c_firstname LIKE '%{$search_fn}%' AND c_lastname LIKE '%{$search_ln}%' AND c_type LIKE '%{$search_ut}%' AND c_department LIKE '%{$search_dept}%';";
+=======
+                $search_query = "SELECT c_id,c_username,c_firstname,c_lastname,c_type,c_email FROM customer
+                WHERE c_username LIKE '%{$search_un}%' AND c_firstname LIKE '%{$search_fn}%' AND c_lastname LIKE '%{$search_ln}%' AND c_type LIKE '%{$search_ut}%';";
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
             }
             $search_result = $mysqli -> query($search_query);
             $search_numrow = $search_result -> num_rows;
@@ -191,8 +210,11 @@ Worked by search
                     <th scope="col">First name</th>
                     <th scope="col">Last name</th>
                     <th scope="col">Type</th>
+<<<<<<< HEAD
                     <th scope="col">Phone</th>
                     <th scope="col">Department/Stream</th>
+=======
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                     <th scope="col">E-mail</th>
                     <th scope="col">Action</th>
                 </tr>
@@ -214,6 +236,7 @@ Worked by search
                         }
                     ?>
                     </td>
+<<<<<<< HEAD
                     <td><?php echo !empty($row["c_phone"]) ? $row["c_phone"] : "N/A";?></td>
                     <td><?php 
                         if(!empty($row["c_department"])){
@@ -242,6 +265,8 @@ Worked by search
                             echo "N/A";
                         }
                     ?></td>
+=======
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                     <td><?php echo $row["c_email"];?></td>
                     <td>
                         <a href="admin_customer_detail.php?c_id=<?php echo $row["c_id"]?>"

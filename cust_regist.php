@@ -27,9 +27,15 @@
         <form method="POST" action="add_cust.php" class="form-floating">
             <h2 class="mt-4 mb-3 fw-normal text-bold"><i class="bi bi-person-plus me-2"></i>Sign Up</h2>
             <div class="form-floating mb-2">
+<<<<<<< HEAD
                 <input type="text" class="form-control" id="username" placeholder="username" name="username"
                     minlength="5" maxlength="45" required>
                 <label for="username">username</label>
+=======
+                <input type="text" class="form-control" id="username" placeholder="Username" name="username"
+                    minlength="5" maxlength="45" required>
+                <label for="username">Username</label>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
             </div>
             <div class="form-floating mb-2">
                 <input type="password" class="form-control" id="pwd" placeholder="Password" name="pwd" minlength="8"
@@ -57,6 +63,7 @@
                 <input type="email" class="form-control" id="email" placeholder="E-mail" name="email" required>
                 <label for="email">E-mail</label>
             </div>
+<<<<<<< HEAD
             <div class="form-floating mb-2">
                 <input type="tel" class="form-control" id="phone_number" placeholder="Phone Number" name="phone_number" 
                     pattern="[0-9]{10}" minlength="10" maxlength="15" required>
@@ -65,6 +72,8 @@
                     Enter your 10-digit phone number
                 </div>
             </div>
+=======
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
             <div class="form-floating">
                 <select class="form-select mb-2" id="gender" name="gender">
                     <option selected value="-">---</option>
@@ -74,13 +83,18 @@
                 <label for="gender">Your Gender</label>
             </div>
             <div class="form-floating">
+<<<<<<< HEAD
                 <select class="form-select mb-2" id="type" name="type" onchange="showDepartmentField()">
+=======
+                <select class="form-select mb-2" id="type" name="type">
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                     <option selected value="-">---</option>
                     <option value="STD">Student</option>
                     <option value="STF">Faculty Staff</option>
                     <option value="GUE">Visitor</option>
                     <option value="OTH">Other</option>
                 </select>
+<<<<<<< HEAD
                 <label for="type">Your role</label>
             </div>
             <div class="form-floating" id="departmentField" style="display: none;">
@@ -92,6 +106,9 @@
                     <option value="MTECH">M.Tech</option>
                 </select>
                 <label for="department">Department/Course</label>
+=======
+                <label for="gender">Your role</label>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
             </div>
             <div class="form-floating">
                 <div class="mb-2 form-check">
@@ -104,6 +121,7 @@
         </form>
     </div>
     <div class="container mt-4"></div>
+<<<<<<< HEAD
     
     <script>
         function showDepartmentField() {
@@ -135,3 +153,9 @@
 </body>
 
 </html>
+=======
+    <?php include('footer.php')?>
+</body>
+
+</html>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685

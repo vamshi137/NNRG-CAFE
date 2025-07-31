@@ -27,7 +27,11 @@
     <div class="d-flex text-center text-white promo-banner-bg py-3">
         <div class="p-lg-2 mx-auto my-3">
             <h1 class="display-5 fw-normal">ADMIN DASHBOARD</h1>
+<<<<<<< HEAD
             <p class="lead fw-normal">Food ordering system of NNRG</p></div>
+=======
+            <p class="lead fw-normal">Food ordering system of SVEC Tadepalligudem</p></div>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
     </div>
 
     <div class="container p-5" id="admin-dashboard">

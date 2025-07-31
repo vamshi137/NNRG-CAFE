@@ -9,6 +9,7 @@
             header("location: ../restricted.php");
             exit(1);
         }
+<<<<<<< HEAD
         
         // Handle form submission
         if(isset($_POST["upd_confirm"])){
@@ -50,6 +51,21 @@
                 }
             } catch (Exception $e) {
                 $mysqli->rollback();
+=======
+        if(isset($_POST["upd_confirm"])){
+            $orh_id = $_POST["orh_id"];
+            $status = $_POST["os"];
+            if($status == 'FNSH'){
+                $fnsh_date = date('Y-m-d\TH:i:s');
+                $query = "UPDATE order_header SET orh_orderstatus = '{$status}', orh_finishedtime = '{$fnsh_date}' WHERE orh_id = {$orh_id};";
+            } else {
+                $query = "UPDATE order_header SET orh_orderstatus = '{$status}', orh_finishedtime = NULL WHERE orh_id = {$orh_id};";
+            }
+            $result = $mysqli -> query($query);
+            if($result){
+                header("location: admin_order_list.php?up_ods=1");
+            }else{
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                 header("location: admin_order_list.php?up_ods=0");
             }
             exit(1);
@@ -57,6 +73,10 @@
         include('../head.php');
     ?>
     <meta charset="UTF-8">
+<<<<<<< HEAD
+=======
+     
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="../css/main.css" rel="stylesheet">
     <link href="../css/login.css" rel="stylesheet">
@@ -72,6 +92,7 @@
             <i class="bi bi-arrow-left-square me-2"></i>Go back
         </a>
         <?php 
+<<<<<<< HEAD
             // Get transaction details from transaction table
             $tid = $_GET["tid"];
             $query = "SELECT t.tid, t.name, t.email, t.rollno, t.year, t.branch_section, 
@@ -89,11 +110,21 @@
                 header("location: admin_order_list.php?error=transaction_not_found");
                 exit(1);
             }
+=======
+            //Select customer record from database
+            $orh_id = $_GET["orh_id"];
+            $query = "SELECT orh.orh_ordertime,c.c_firstname,c.c_lastname,orh.orh_orderstatus,p.p_amount,s.s_name
+                FROM order_header orh INNER JOIN customer c ON orh.c_id = c.c_id INNER JOIN payment p ON p.p_id = orh.p_id 
+                INNER JOIN shop s ON orh.s_id = s.s_id WHERE orh.orh_id = {$orh_id};";
+            $result = $mysqli ->query($query);
+            $row = $result -> fetch_array();
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
         ?>
         <form method="POST" action="admin_order_update.php" class="form-floating">
             <h2 class="mt-4 mb-3 fw-normal text-bold"><i class="bi bi-pencil-square me-2"></i>Update Order Status</h2>
             
             <div class="form-floating mb-2">
+<<<<<<< HEAD
                 <input type="text" class="form-control" id="transactionid" placeholder="Transaction ID" value="<?php echo $row["tid"];?>" disabled>
                 <label for="transactionid">Transaction ID</label>
             </div>
@@ -175,10 +206,43 @@
             <div class="text-center">
                 <a href="admin_order_list.php" class="btn btn-outline-secondary">Cancel & Return to List</a>
             </div>
+=======
+                <input type="text" class="form-control" id="customername" placeholder="Customer Name" value="<?php echo $row["c_firstname"]." ".$row["c_lastname"];?>" disabled>
+                <label for="customername">Customer Name</label>
+            </div>
+            <div class="form-floating mb-2">
+                <input type="text" class="form-control" id="shopname" placeholder="Shop Name" value="<?php echo $row["s_name"];?>" disabled>
+                <label for="shopname">Shop Name</label>
+            </div>
+            <div class="form-floating mb-2">
+                <input type="text" class="form-control" id="ordercost" placeholder="Order Cost" value="<?php echo $row["p_amount"]." INR";?>" disabled>
+                <label for="ordercost">Order Cost</label>
+            </div>
+           
+            <div class="form-floating mb-2">
+                <select class="form-select" id="orderstatus" name="os">
+                    <option selected value="">Order Status</option>
+                    
+                    <option value="VRFY" <?php if($row["orh_orderstatus"]=="VRFY"){ echo "selected";}?>>VRFY | Order Verifying</option>
+                    <option value="ACPT" <?php if($row["orh_orderstatus"]=="ACPT"){ echo "selected";}?>>ACPT | Order Accepted</option>
+                    <option value="PREP" <?php if($row["orh_orderstatus"]=="PREP"){ echo "selected";}?>>PREP | Order Preparing</option>
+                    <option value="RDPK" <?php if($row["orh_orderstatus"]=="RDPK"){ echo "selected";}?>>RDPK | Ready for Pick-Up</option>
+                    <option value="FNSH" <?php if($row["orh_orderstatus"]=="FNSH"){ echo "selected";}?>>FNSH | Order Finished</option>
+                    <option value="CNCL" <?php if($row["orh_orderstatus"]=="CNCL"){ echo "selected";}?>>CNCL | Order Cancelled</option>
+                </select>
+                <label for="orderstatus">Order Status</label>
+            </div>
+            <input type="hidden" name="orh_id" value="<?php echo $orh_id;?>">
+            <button class="w-100 btn btn-success mb-3" name="upd_confirm" type="submit">Update order status</button>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
         </form>
     </div>
 
     <?php include('admin_footer.php')?>
 </body>
 
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685

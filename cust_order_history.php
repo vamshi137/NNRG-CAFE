@@ -44,6 +44,7 @@
             <!-- ONGOING ORDER TAB -->
             <div class="tab-pane fade show active p-3" id="nav-ongoing" role="tabpanel" aria-labelledby="ongoing-tab">
                 <?php
+<<<<<<< HEAD
                 // Get ongoing orders (not finished or cancelled)
                 $ongoing_query = "SELECT t.*, c.c_firstname, c.c_lastname 
                                  FROM transaction t 
@@ -75,11 +76,42 @@
                                     <small class="me-auto d-flex" style="font-weight: 500;">Preparing your order</small>
                                 </div>
                                 <?php }else if($og_row["order_status"]=="RDPK"){?>
+=======
+                $ongoing_query = "SELECT * FROM order_header WHERE c_id = {$_SESSION['cid']} AND orh_orderstatus <> 'FNSH';";
+                $ongoing_result = $mysqli -> query($ongoing_query);
+                $ongoing_num = $ongoing_result -> num_rows;
+                if($ongoing_num>0){
+            ?>
+                <div class="row row-cols-1 row-cols-md-3">
+                    <!-- START EACH ORDER DETAIL -->
+                    <?php while($og_row = $ongoing_result -> fetch_array()){ ?>
+                    <div class="col">
+                        <a href="cust_order_detail.php?orh_id=<?php echo $og_row["orh_id"]?>"
+                            class="text-dark text-decoration-none">
+                            <div class="card mb-3">
+                                <?php if($og_row["orh_orderstatus"]=="VRFY"){ ?>
+                                <div class="card-header bg-info text-dark justify-content-between">
+                                  <small class="me-auto d-flex" style="font-weight: 500;">Verifying your order</small>
+                                </div>
+                                <?php  } else if($og_row["orh_orderstatus"]=="ACPT"){ ?>
+                                <div class="card-header bg-secondary text-dark justify-content-between">
+                                    <small class="me-auto d-flex" style="font-weight: 500;">Accepted your order</small>
+                                </div>
+                                <?php }else if($og_row["orh_orderstatus"]=="PREP"){?>
+                                <div class="card-header bg-warning justify-content-between">
+                                    <small class="me-auto d-flex" style="font-weight: 500;">Preparing your order</small>
+                                </div>
+                                <?php }else if($og_row["orh_orderstatus"]=="RDPK"){?>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                                 <div class="card-header bg-primary text-white justify-content-between">
                                     <small class="me-auto d-flex" style="font-weight: 500;">Your order is ready for
                                         pick-up</small>
                                 </div>
+<<<<<<< HEAD
                                 <?php }else if($og_row["order_status"]=="CNCL"){?>
+=======
+                                <?php }else if($og_row["orh_orderstatus"]=="CNCL"){?>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                                 <div class="card-header bg-danger text-white justify-content-between">
                                     <small class="me-auto d-flex" style="font-weight: 500;">Order Cancelled</small>
                                 </div>
@@ -89,6 +121,7 @@
                                 </div><?php } ?>
                                 <div class="card-body">
                                     <div class="card-text row row-cols-1 small">
+<<<<<<< HEAD
                                         <div class="col">Order #<?php echo $og_row["tid"];?></div>
                                         <div class="col mb-2">Customer: <?php echo $og_row["name"];?></div>
                                         <div class="col mb-2">Roll No: <?php echo $og_row["rollno"];?></div>
@@ -101,6 +134,27 @@
                                         <div class="col mt-1 mb-2"><strong class="h5">₹<?php echo number_format($og_row["order_cost"], 2);?></strong></div>
                                         <div class="col text-end">
                                             <a href="cust_order_detail.php?t_id=<?php echo $og_row["id"]?>"
+=======
+                                        <div class="col">Order #<?php echo $og_row["t_id"];?></div>
+
+                                        <div class="col mb-2">From
+                                            <?php
+                                            $shop_query = "SELECT s_name FROM shop WHERE s_id = {$og_row['s_id']};";
+                                            $shop_arr = $mysqli -> query($shop_query) -> fetch_array();
+                                            echo $shop_arr["s_name"];
+                                        ?>
+                                        </div>
+                                        <?php
+                                        $ord_query = "SELECT COUNT(*) AS cnt,SUM(ord_amount*ord_buyprice) AS gt FROM order_detail
+                                        WHERE orh_id = {$og_row['orh_id']}";
+                                        $ord_arr = $mysqli -> query($ord_query) -> fetch_array();
+                                    ?>
+                                        <div class="col pt-2 border-top"><?php echo $ord_arr["cnt"]?> item(s)</div>
+                                        <div class="col mt-1 mb-2"><strong class="h5"><?php echo $ord_arr["gt"]?>
+                                                INR</strong></div>
+                                        <div class="col text-end">
+                                            <a href="cust_order_detail.php?orh_id=<?php echo $og_row["orh_id"]?>"
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                                                 class="text-dark text-decoration-none">
                                                 <i class="bi bi-arrow-right-square"></i> More Detail
                                             </a>
@@ -118,13 +172,18 @@
                 <div class="row row-cols-1">
                     <div class="col pt-3 px-3 bg-danger text-white rounded text-center">
                         <i class="bi bi-x-circle-fill"></i>
+<<<<<<< HEAD
                         <p class="ms-2 mt-2">You don't have any ongoing orders.</p>
+=======
+                        <p class="ms-2 mt-2">You don't have any order yet.</p>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                     </div>
                 </div>
                 <!-- END CASE NO ORDER -->
                 <?php } ?>
             </div>
 
+<<<<<<< HEAD
             <!-- COMPLETED ORDER TAB -->
             <div class="tab-pane fade p-3" id="nav-completed" role="tabpanel" aria-labelledby="completed-tab">
             <?php
@@ -172,6 +231,70 @@
                                         <div class="col mt-1 mb-2"><strong class="h5">₹<?php echo number_format($comp_row["order_cost"], 2);?></strong></div>
                                         <div class="col text-end">
                                             <a href="cust_order_detail.php?t_id=<?php echo $comp_row["id"]?>"
+=======
+
+            <!-- COMPLETED ORDER TAB -->
+            <div class="tab-pane fade p-3" id="nav-completed" role="tabpanel" aria-labelledby="completed-tab">
+            <?php
+                $ongoing_query = "SELECT * FROM order_header WHERE c_id = {$_SESSION['cid']} AND orh_orderstatus = 'FNSH' ;";
+                $ongoing_result = $mysqli -> query($ongoing_query);
+                $ongoing_num = $ongoing_result -> num_rows;
+                if($ongoing_num>0){
+            ?>
+                <div class="row row-cols-1 row-cols-md-3">
+                    <!-- START EACH ORDER DETAIL -->
+                    <?php while($og_row = $ongoing_result -> fetch_array()){ ?>
+                    <div class="col">
+                        <a href="cust_order_detail.php?orh_id=<?php echo $og_row["orh_id"]?>"
+                            class="text-dark text-decoration-none">
+                            <div class="card mb-3">
+                                <?php if($og_row["orh_orderstatus"]=="VRFY"){ ?>
+                                <div class="card-header bg-info text-dark justify-content-between">
+                                  <small class="me-auto d-flex" style="font-weight: 500;">Verifying your order</small>
+                                </div>
+                              <?php }else if($og_row["orh_orderstatus"]=="ACPT"){ ?>
+                                <div class="card-header bg-secondary text-dark justify-content-between">
+                                    <small class="me-auto d-flex" style="font-weight: 500;">Accepted your order</small>
+                                </div>
+                                <?php }else if($og_row["orh_orderstatus"]=="PREP"){?>
+                                <div class="card-header bg-warning justify-content-between">
+                                    <small class="me-auto d-flex" style="font-weight: 500;">Preparing your order</small>
+                                </div>
+                                <?php }else if($og_row["orh_orderstatus"]=="RDPK"){?>
+                                <div class="card-header bg-primary text-white justify-content-between">
+                                    <small class="me-auto d-flex" style="font-weight: 500;">Your order is ready for
+                                        pick-up</small>
+                                </div>
+                                <?php }else if($og_row["orh_orderstatus"]=="CNCL"){?>
+                                <div class="card-header bg-danger text-white justify-content-between">
+                                    <small class="me-auto d-flex" style="font-weight: 500;">Order Cancelled</small>
+                                </div>
+                                <?php }else{?>
+                                <div class="card-header bg-success text-white justify-content-between">
+                                    <small class="me-auto d-flex" style="font-weight: 500;">Order Finished</small>
+                                </div>
+                                <?php } ?>
+                                <div class="card-body">
+                                    <div class="card-text row row-cols-1 small">
+                                        <div class="col">Order #<?php echo $og_row["t_id"];?></div>
+                                        <div class="col mb-2">From
+                                            <?php
+                                            $shop_query = "SELECT s_name FROM shop WHERE s_id = {$og_row['s_id']};";
+                                            $shop_arr = $mysqli -> query($shop_query) -> fetch_array();
+                                            echo $shop_arr["s_name"];
+                                        ?>
+                                        </div>
+                                        <?php
+                                        $ord_query = "SELECT COUNT(*) AS cnt,SUM(ord_amount*ord_buyprice) AS gt FROM order_detail
+                                        WHERE orh_id = {$og_row['orh_id']}";
+                                        $ord_arr = $mysqli -> query($ord_query) -> fetch_array();
+                                    ?>
+                                        <div class="col pt-2 border-top"><?php echo $ord_arr["cnt"]?> item(s)</div>
+                                        <div class="col mt-1 mb-2"><strong class="h5"><?php echo $ord_arr["gt"]?>
+                                                INR</strong></div>
+                                        <div class="col text-end">
+                                            <a href="cust_order_detail.php?orh_id=<?php echo $og_row["orh_id"]?>"
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                                                 class="text-dark text-decoration-none">
                                                 <i class="bi bi-arrow-right-square"></i>More Detail
                                             </a>
@@ -189,7 +312,11 @@
                 <div class="row row-cols-1">
                     <div class="col pt-3 px-3 bg-danger text-white rounded text-center">
                         <i class="bi bi-x-circle-fill"></i>
+<<<<<<< HEAD
                         <p class="ms-2 mt-2">You don't have any completed orders yet.</p>
+=======
+                        <p class="ms-2 mt-2">You don't have any order yet.</p>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                     </div>
                 </div>
                 <!-- END CASE NO ORDER -->
@@ -211,4 +338,8 @@
     
 </body>
 
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685

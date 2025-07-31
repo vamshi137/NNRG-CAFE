@@ -1,7 +1,10 @@
+<<<<<<< HEAD
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ?>
+=======
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
 <!DOCTYPE html>
 <html lang="en">
 <head>

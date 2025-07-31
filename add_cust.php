@@ -18,8 +18,11 @@
         $gender = $_POST["gender"];
         $email = $_POST["email"];
         $type = $_POST["type"];
+<<<<<<< HEAD
         $phone_number = $_POST["phone_number"]; // NEW FIELD
         $department = $_POST["department"]; // NEW FIELD
+=======
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
 
         if($gender == "-" || $type == "-"){
             ?>
@@ -31,6 +34,7 @@
             exit(1);
         }
 
+<<<<<<< HEAD
         // Check if department is required for students and faculty
         if(($type == "STD" || $type == "STF") && $department == "-"){
             ?>
@@ -53,6 +57,8 @@
             exit(1);
         }
 
+=======
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
         //Check for duplicating username
         $query = "SELECT c_username FROM customer WHERE c_username = '$username';";
         $result = $mysqli -> query($query);
@@ -79,6 +85,7 @@
         }
         $result -> free_result();
 
+<<<<<<< HEAD
         //Check for duplicating phone number
         $query = "SELECT c_phone FROM customer WHERE c_phone = '$phone_number';";
         $result = $mysqli -> query($query);
@@ -97,6 +104,11 @@
 
         $query = "INSERT INTO customer (c_username,c_pwd,c_firstname,c_lastname,c_email,c_gender,c_type,c_phone,c_department)
         VALUES ('$username','$pwd','$firstname','$lastname','$email','$gender','$type','$phone_number',$dept_value);";
+=======
+
+        $query = "INSERT INTO customer (c_username,c_pwd,c_firstname,c_lastname,c_email,c_gender,c_type)
+        VALUES ('$username','$pwd','$firstname','$lastname','$email','$gender','$type');";
+>>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
 
         $result = $mysqli -> query($query);
 
