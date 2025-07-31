@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 <?php
 session_start();
 include("../conn_db.php");
@@ -480,6 +480,4 @@ echo "<!-- Debug: TID received = " . $tid . " -->";
     </div>
     <?php include('admin_footer.php')?>
 </body>
-
->>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
 </html>
