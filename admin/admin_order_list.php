@@ -31,7 +31,6 @@
             </a>
 
             <?php
-<<<<<<< HEAD
             // Handle delete order request
             if(isset($_GET["delete_order"]) && isset($_GET["tid"])){
                 $tid_to_delete = $_GET["tid"];
@@ -92,8 +91,6 @@
                 }
             }
 
-=======
->>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
             if(isset($_GET["up_ods"])){
                 if($_GET["up_ods"]==1){
                     ?>
@@ -126,7 +123,6 @@
                         <select class="form-select" id="c_id" name="c_id">
                             <option selected value="">Customer Name</option>
                             <?php
-<<<<<<< HEAD
                                 $option_query = "SELECT DISTINCT t.c_id, t.name
                                 FROM transaction t ORDER BY t.name;";
                                 $option_result = $mysqli->query($option_query);
@@ -135,16 +131,6 @@
                                     while($option_arr = $option_result->fetch_array()){
                             ?>
                             <option value="<?php echo $option_arr["c_id"]?>" <?php if(isset($_GET["c_id"]) && $_GET["c_id"]==$option_arr["c_id"]){ echo "selected";}?>><?php echo $option_arr["name"]?></option>
-=======
-                                $option_query = "SELECT DISTINCT c.c_id, c.c_firstname,c.c_lastname
-                                FROM order_header orh INNER JOIN customer c ON orh.c_id = c.c_id;";
-                                $option_result = $mysqli -> query($option_query);
-                                $opt_row = $option_result -> num_rows;
-                                if($option_result -> num_rows != 0){
-                                    while($option_arr = $option_result -> fetch_array()){
-                            ?>
-                            <option value="<?php echo $option_arr["c_id"]?>"><?php echo $option_arr["c_firstname"]." ".$option_arr["c_lastname"]?></option>
->>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                             <?php
                                     }
                                 }
@@ -152,7 +138,6 @@
                         </select>
                     </div>
                     <div class="col">
-<<<<<<< HEAD
                         <select class="form-select" id="year" name="year">
                             <?php if(isset($_GET["search"])){?>
                             <option selected value="">Student Year</option>
@@ -166,28 +151,10 @@
                             <option value="2nd Year">2nd Year</option>
                             <option value="3rd Year">3rd Year</option>
                             <option value="4th Year">4th Year</option>
-=======
-                        <select class="form-select" id="utype" name="ut">
-                            <?php if(isset($_GET["search"])){?>
-                            <option selected value="">Customer Type</option>
-                            <option value="STD" <?php if($_GET["ut"]=="STD"){ echo "selected";}?>>Student</option>
-                            <option value="STF" <?php if($_GET["ut"]=="STF"){ echo "selected";}?>>Faculty Staff</option>
-                            <option value="GUE" <?php if($_GET["ut"]=="GUE"){ echo "selected";}?>>Visitor</option>
-                            <option value="ADM" <?php if($_GET["ut"]=="ADM"){ echo "selected";}?>>Admin</option>
-                            <option value="OTH" <?php if($_GET["ut"]=="OTH"){ echo "selected";}?>>Other</option>
-                            <?php }else{ ?>
-                            <option selected value="">Customer Type</option>
-                            <option value="STD">Student</option>
-                            <option value="STF">Faculty Staff</option>
-                            <option value="GUE">Visitor</option>
-                            <option value="ADM">Admin</option>
-                            <option value="OTH">Other</option>
->>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                             <?php } ?>
                         </select>
                     </div>
                     <div class="col">
-<<<<<<< HEAD
                         <select class="form-select" id="branch" name="branch">
                             <?php if(isset($_GET["search"])){?>
                             <option selected value="">Branch</option>
@@ -206,23 +173,6 @@
                             <option value="MECH">MECH</option>
                             <option value="CIVIL">CIVIL</option>
                             <?php } ?>
-=======
-                        <select class="form-select" id="s_id" name="s_id">
-                            <option selected value="">Shop Name</option>
-                            <?php
-                                $option_query = "SELECT DISTINCT s.s_id, s.s_name
-                                FROM order_header orh INNER JOIN shop s ON orh.s_id = s.s_id;";
-                                $option_result = $mysqli -> query($option_query);
-                                $opt_row = $option_result -> num_rows;
-                                if($option_result -> num_rows != 0){
-                                    while($option_arr = $option_result -> fetch_array()){
-                            ?>
-                            <option value="<?php echo $option_arr["s_id"]?>"><?php echo $option_arr["s_name"]?></option>
-                            <?php
-                                    }
-                                }
-                            ?>
->>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                         </select>
                     </div>
                     <div class="col">
@@ -258,7 +208,6 @@
     </div>
 
     <?php
-<<<<<<< HEAD
         // Build query based on search parameters
         $where_conditions = array();
         
@@ -293,23 +242,6 @@
         $numrow = $result->num_rows;
         if($numrow > 0){
     ?>
-=======
-            if(isset($_GET["search"])){
-                if($_GET["c_id"]!=''){ $cid_clause = " AND orh.c_id = '{$_GET['c_id']}' "; }else{ $cid_clause = " ";}
-                if($_GET["s_id"]!=''){ $sid_clause = " AND orh.s_id = '{$_GET['s_id']}' "; }else{ $sid_clause = " ";}
-                $query = "SELECT orh.orh_id,orh.orh_ordertime,c.c_firstname,c.c_lastname,orh.orh_orderstatus,p.p_amount,s.s_name,orh.t_id
-                FROM order_header orh INNER JOIN customer c ON orh.c_id = c.c_id INNER JOIN payment p ON p.p_id = orh.p_id
-                INNER JOIN shop s ON orh.s_id = s.s_id WHERE c.c_type LIKE '%{$_GET['ut']}%' 
-                AND orh_orderstatus LIKE '%{$_GET['os']}%'".$cid_clause.$sid_clause." ORDER BY orh.orh_ordertime DESC;";
-            }else{
-                $query = "SELECT orh.orh_id,orh.orh_ordertime,c.c_firstname,c.c_lastname,orh.orh_orderstatus,p.p_amount,s.s_name,orh.t_id
-                FROM order_header orh INNER JOIN customer c ON orh.c_id = c.c_id INNER JOIN payment p ON p.p_id = orh.p_id INNER JOIN shop s ON orh.s_id = s.s_id ORDER BY orh.orh_ordertime DESC;";
-            }
-            $result = $mysqli -> query($query);
-            $numrow = $result -> num_rows;
-            if($numrow > 0){
-        ?>
->>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
         <div class="container align-items-stretch pt-2">
             <!-- GRID EACH MENU -->
             <div class="table-responsive">
@@ -321,23 +253,15 @@
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Transaction ID</th>
-<<<<<<< HEAD
                         <th scope="col">Customer Details</th>
                         <th scope="col">Food Items</th>
                         <th scope="col">Order Status</th>
                         <th scope="col">Order Date</th>
-=======
-                        <th scope="col">Shop Name</th>
-                        <th scope="col">Order Status</th>
-                        <th scope="col">Order Date</th>
-                        <th scope="col">Customer Name</th>
->>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                         <th scope="col">Order Cost</th>
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-<<<<<<< HEAD
                     <?php $i=1; while($row = $result->fetch_array()){ 
                     
                         // FIXED: Get food items for each order separately
@@ -412,8 +336,8 @@
                         <td><strong class="text-success">₹<?php echo number_format($row["order_cost"], 2);?></strong></td>
                         <td>
                             <div class="btn-group-vertical" role="group">
-                                <!-- View button redirects to admin_food_detail.php with transaction ID -->
-                                <a href="admin_food_detail.php?tid=<?php echo urlencode($row["tid"]); ?>" 
+                                <!-- FIXED: View button now redirects to admin_order_detail.php instead of admin_food_detail.php -->
+                                <a href="admin_order_detail.php?tid=<?php echo urlencode($row["tid"]); ?>" 
                                    class="btn btn-sm btn-primary mb-1" 
                                    title="View Order Details - TID: <?php echo htmlspecialchars($row["tid"]); ?>">View</a>
                                 <a href="admin_order_update.php?tid=<?php echo urlencode($row["tid"]); ?>" 
@@ -421,40 +345,6 @@
                                 <button class="btn btn-sm btn-outline-danger" 
                                         onclick="deleteOrder('<?php echo htmlspecialchars($row['tid'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($row['name'], ENT_QUOTES); ?>')">Delete</button>
                             </div>
-=======
-                    <?php $i=1; while($row = $result -> fetch_array()){ ?>
-                    <tr>
-                        <th><?php echo $i++;?></th>
-                        <td><?php echo $row["t_id"];?></td>
-                        <td><?php echo $row["s_name"];?></td>
-                        <td>
-                            <?php if($row["orh_orderstatus"]=="VRFY"){ ?>
-                                <span class="fw-bold badge rounded-pill bg-info text-dark">Verifying</span>
-                            <?php }else if($row["orh_orderstatus"]=="ACPT"){ ?>
-                                <span class="fw-bold badge rounded-pill bg-secondary text-dark">Accepted</span>
-                            <?php }else if($row["orh_orderstatus"]=="PREP"){ ?>
-                                <span class="fw-bold badge rounded-pill bg-warning text-dark">Preparing</span>
-                            <?php }else if($row["orh_orderstatus"]=="RDPK"){ ?>
-                                <span class="fw-bold badge rounded-pill bg-primary text-white">Ready to pick up</span>
-                            <?php }else if($row["orh_orderstatus"]=="FNSH"){?>
-                                <span class="fw-bold badge rounded-pill bg-success text-white">Completed</span>
-                            <?php }else if($row["orh_orderstatus"]=="CNCL"){?>
-                                <span class="fw-bold badge rounded-pill bg-danger text-white">Cancelled</span>
-                            
-                            <?php } ?>
-                        </td>
-                        <td><?php 
-                        $order_time = (new Datetime($row["orh_ordertime"])) -> format("F j, Y H:i");
-                        echo $order_time;
-                        ?></td>
-                        <td><?php echo $row["c_firstname"]." ".$row["c_lastname"];?></td>
-                        <td><?php echo $row["p_amount"]." INR";?></td>
-                        <td>
-                            <a href="admin_order_detail.php?orh_id=<?php echo $row["orh_id"]?>" class="btn btn-sm btn-primary">View</a>
-                            <a href="admin_order_update.php?orh_id=<?php echo $row["orh_id"]?>" class="btn btn-sm btn-outline-success">Update Status</a>
-                            <a href="admin_order_delete.php?orh_id=<?php echo $row["orh_id"]?>"
-                            class="btn btn-sm btn-outline-danger">Delete</a>
->>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                         </td>
                     </tr>
                     <?php } ?>
@@ -468,11 +358,7 @@
             <div class="col m-2 p-2 bg-danger text-white rounded text-start">
                 <i class="bi bi-x-circle ms-2"></i><span class="ms-2 mt-2">No order found</span>
                 <?php if(isset($_GET["search"])){ ?>
-<<<<<<< HEAD
                 <a href="admin_order_list.php" class="text-white ms-3">Clear Search Result</a>
-=======
-                <a href="admin_order_list.php" class="text-white">Clear Search Result</a>
->>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
                 <?php } ?>
             </div>
         </div>
@@ -480,7 +366,6 @@
         <!-- END GRID SHOP SELECTION -->
         <?php } ?>
 
-<<<<<<< HEAD
     <script>
     function deleteOrder(tid, customerName) {
         // Simple JavaScript confirmation dialog
@@ -493,8 +378,6 @@
     }
     </script>
 
-=======
->>>>>>> 5027eac0c6b4220983dc702d727e608a440f1685
     <?php include('admin_footer.php')?>
 </body>
 

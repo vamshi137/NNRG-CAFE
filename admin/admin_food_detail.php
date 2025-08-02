@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 include("../conn_db.php");
@@ -104,44 +103,78 @@ echo "<!-- Debug: TID received = " . $tid . " -->";
                         </div>
                         <div class="card-body">
                             <?php
-                            // Get transaction items with food details
-                            $items_query = "SELECT 
-                                ti.*,
-                                f.f_name,
-                                f.f_price,
-                                s.s_name as shop_name
-                            FROM transaction_items ti
-                            LEFT JOIN food f ON ti.f_id = f.f_id
-                            LEFT JOIN shop s ON f.s_id = s.s_id
-                            WHERE ti.tid = ?
-                            ORDER BY ti.id";
+                            // SIMPLE FIX: Find order by matching user and time instead of broken t_id
+                            $items_found = false;
+                            $items_result = null;
                             
-                            $stmt2 = $conn->prepare($items_query);
-                            $stmt2->bind_param("s", $tid);
-                            $stmt2->execute();
-                            $items_result = $stmt2->get_result();
+                            // Get user info from transaction
+                            $user_query = "SELECT user_id, t_date, t_time FROM transaction WHERE tid = ?";
+                            $user_stmt = $conn->prepare($user_query);
+                            $user_stmt->bind_param("s", $tid);
+                            $user_stmt->execute();
+                            $user_result = $user_stmt->get_result();
                             
-                            echo "<!-- Debug: Items query executed, found " . $items_result->num_rows . " items -->";
-                            echo "<!-- Debug: Items query: " . str_replace('?', "'" . $tid . "'", $items_query) . " -->";
+                            if($user_row = $user_result->fetch_assoc()) {
+                                $user_id = $user_row['user_id'];
+                                $t_date = $user_row['t_date'];
+                                $t_time = $user_row['t_time'];
+                                
+                                // Find matching order_header by user and approximate time (within 10 minutes)
+                                $order_query = "SELECT orh_id FROM order_header 
+                                              WHERE user_id = ? 
+                                              AND orh_date = ? 
+                                              AND ABS(TIME_TO_SEC(orh_time) - TIME_TO_SEC(?)) <= 600
+                                              ORDER BY ABS(TIME_TO_SEC(orh_time) - TIME_TO_SEC(?)) ASC
+                                              LIMIT 1";
+                                
+                                $order_stmt = $conn->prepare($order_query);
+                                $order_stmt->bind_param("isss", $user_id, $t_date, $t_time, $t_time);
+                                $order_stmt->execute();
+                                $order_result = $order_stmt->get_result();
+                                
+                                if($order_row = $order_result->fetch_assoc()) {
+                                    $orh_id = $order_row['orh_id'];
+                                    
+                                    // Now get the food items using the found orh_id
+                                    $items_query = "SELECT 
+                                        ord.ord_amount as quantity,
+                                        ord.ord_buyprice as unit_price,
+                                        (ord.ord_amount * ord.ord_buyprice) as total_price,
+                                        ord.ord_note as note,
+                                        f.f_id,
+                                        f.f_name,
+                                        f.f_pic,
+                                        f.f_price,
+                                        s.s_name as shop_name
+                                    FROM order_detail ord
+                                    INNER JOIN food f ON ord.f_id = f.f_id
+                                    LEFT JOIN shop s ON f.s_id = s.s_id
+                                    WHERE ord.orh_id = ?
+                                    ORDER BY ord.ord_id";
+                                    
+                                    $items_stmt = $conn->prepare($items_query);
+                                    $items_stmt->bind_param("i", $orh_id);
+                                    $items_stmt->execute();
+                                    $items_result = $items_stmt->get_result();
+                                    
+                                    if($items_result->num_rows > 0) {
+                                        $items_found = true;
+                                        echo "<!-- SUCCESS: Found items by matching user and time -->";
+                                    }
+                                }
+                            }
                             
-                            // Let's also check what's actually in transaction_items table
-                            $debug_query = "SELECT COUNT(*) as total_items FROM transaction_items";
-                            $debug_result = $conn->query($debug_query);
-                            $debug_count = $debug_result->fetch_assoc();
-                            echo "<!-- Debug: Total items in transaction_items table: " . $debug_count['total_items'] . " -->";
+                            echo "<!-- Debug: Items found: " . ($items_found ? "YES" : "NO") . " -->";
+                            echo "<!-- Debug: Items count: " . ($items_result ? $items_result->num_rows : "0") . " -->";
                             
-                            // Check if this specific tid exists in transaction_items
-                            $debug_tid_query = "SELECT COUNT(*) as tid_count FROM transaction_items WHERE tid = ?";
-                            $debug_stmt = $conn->prepare($debug_tid_query);
-                            $debug_stmt->bind_param("s", $tid);
-                            $debug_stmt->execute();
-                            $debug_tid_result = $debug_stmt->get_result();
-                            $debug_tid_count = $debug_tid_result->fetch_assoc();
-                            echo "<!-- Debug: Items for this TID (" . $tid . "): " . $debug_tid_count['tid_count'] . " -->";
-                            
-                            if($items_result->num_rows > 0) {
+                            if($items_found && $items_result->num_rows > 0) {
                                 $total_items = 0;
                                 $total_cost = 0;
+                                
+                                echo "<div class='alert alert-success mb-3'>";
+                                echo "<h5>✅ Food Items Found!</h5>";
+                                echo "<small class='text-muted'>Order matched by user and time (fixing broken t_id link)</small>";
+                                echo "</div>";
                                 
                                 echo "<div class='table-responsive'>";
                                 echo "<table class='table table-striped'>";
@@ -153,6 +186,7 @@ echo "<!-- Debug: TID received = " . $tid . " -->";
                                 echo "<th>Quantity</th>";
                                 echo "<th>Unit Price</th>";
                                 echo "<th>Total Price</th>";
+                                echo "<th>Notes</th>";
                                 echo "</tr>";
                                 echo "</thead>";
                                 echo "<tbody>";
@@ -163,14 +197,25 @@ echo "<!-- Debug: TID received = " . $tid . " -->";
                                     
                                     echo "<tr>";
                                     echo "<td>";
-                                    // Since f_image column doesn't exist, show placeholder
-                                    echo "<div style='width: 60px; height: 60px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6c757d;'>No Image</div>";
+                                    // Display food image if available
+                                    if(!empty($item['f_pic'])) {
+                                        echo "<img src='../img/" . htmlspecialchars($item['f_pic']) . "' class='img-fluid rounded' style='width: 60px; height: 60px; object-fit: cover;' alt='" . htmlspecialchars($item['f_name']) . "'>";
+                                    } else {
+                                        echo "<img src='../img/default.png' class='img-fluid rounded' style='width: 60px; height: 60px; object-fit: cover;' alt='No Image'>";
+                                    }
                                     echo "</td>";
                                     echo "<td><strong>" . htmlspecialchars($item['f_name'] ?? 'Unknown Item') . "</strong></td>";
                                     echo "<td>" . htmlspecialchars($item['shop_name'] ?? 'Unknown Shop') . "</td>";
-                                    echo "<td>" . intval($item['quantity']) . "</td>";
+                                    echo "<td><span class='badge bg-primary'>" . intval($item['quantity']) . "</span></td>";
                                     echo "<td>₹" . number_format($item['unit_price'], 2) . "</td>";
-                                    echo "<td>₹" . number_format($item['total_price'], 2) . "</td>";
+                                    echo "<td><strong>₹" . number_format($item['total_price'], 2) . "</strong></td>";
+                                    echo "<td>";
+                                    if(!empty($item['note'])) {
+                                        echo "<small class='text-info'>" . htmlspecialchars($item['note']) . "</small>";
+                                    } else {
+                                        echo "<small class='text-muted'>No notes</small>";
+                                    }
+                                    echo "</td>";
                                     echo "</tr>";
                                 }
                                 
@@ -181,11 +226,16 @@ echo "<!-- Debug: TID received = " . $tid . " -->";
                                 // Order Summary
                                 echo "<div class='row mt-3'>";
                                 echo "<div class='col-md-6 offset-md-6'>";
-                                echo "<div class='card'>";
+                                echo "<div class='card bg-light'>";
                                 echo "<div class='card-body'>";
-                                echo "<h5>Order Summary</h5>";
-                                echo "<p><strong>Total Items:</strong> " . $total_items . "</p>";
-                                echo "<p><strong>Total Cost:</strong> ₹" . number_format($total_cost, 2) . "</p>";
+                                echo "<h5 class='card-title'>Order Summary</h5>";
+                                echo "<p class='card-text'><strong>Total Items:</strong> <span class='badge bg-info'>" . $total_items . "</span></p>";
+                                echo "<p class='card-text'><strong>Total Cost:</strong> <span class='text-success h5'>₹" . number_format($total_cost, 2) . "</span></p>";
+                                
+                                // Compare with transaction total
+                                if(abs($total_cost - $transaction['order_cost']) > 0.01) {
+                                    echo "<p class='card-text'><small class='text-warning'>Note: Calculated total (₹" . number_format($total_cost, 2) . ") differs from transaction total (₹" . number_format($transaction['order_cost'], 2) . ")</small></p>";
+                                }
                                 echo "</div>";
                                 echo "</div>";
                                 echo "</div>";
@@ -193,15 +243,14 @@ echo "<!-- Debug: TID received = " . $tid . " -->";
                                 
                             } else {
                                 echo "<div class='alert alert-warning'>";
-                                echo "<h5>No food items found in this order</h5>";
+                                echo "<h5><i class='fas fa-exclamation-triangle'></i> No food items found for this order</h5>";
                                 echo "<p>This could mean:</p>";
                                 echo "<ul>";
-                                echo "<li>The order items were not properly saved</li>";
-                                echo "<li>There's a data mismatch in the database</li>";
-                                echo "<li>The transaction ID doesn't have associated items</li>";
+                                echo "<li>The order was placed but no items were recorded</li>";
+                                echo "<li>There's a data synchronization issue between systems</li>";
+                                echo "<li>The order is still being processed</li>";
                                 echo "</ul>";
                                 echo "</div>";
-                                echo "<!-- Debug: No items found for TID = " . $tid . " -->";
                             }
                             ?>
                         </div>
@@ -232,3 +281,4 @@ echo "<!-- Debug: TID received = " . $tid . " -->";
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+</html>
