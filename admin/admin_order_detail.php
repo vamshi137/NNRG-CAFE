@@ -46,7 +46,7 @@ if($_SESSION["utype"]!="ADMIN"){
                 exit;
             }
 
-            // Get order details from transaction table
+            // Get order details from transaction table (UPDATED to include order_type)
             $query = "SELECT * FROM transaction WHERE tid = ?";
             $stmt = $mysqli->prepare($query);
             $stmt->bind_param("s", $tid);
@@ -125,6 +125,23 @@ if($_SESSION["utype"]!="ADMIN"){
                                 <td><strong>Order Date:</strong></td>
                                 <td><?php echo date('F j, Y H:i:s', strtotime($order['created_at'])); ?></td>
                             </tr>
+                            <!-- NEW: Order Type Display -->
+                            <tr>
+                                <td><strong>Order Type:</strong></td>
+                                <td>
+                                    <?php 
+                                    $order_type = $order['order_type'] ?? 'takeaway'; // Default fallback
+                                    if($order_type == 'dine-in'): ?>
+                                        <span class="badge bg-primary rounded-pill">
+                                            <i class="bi bi-house-door-fill me-1"></i>Dine-In
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="badge bg-success rounded-pill">
+                                            <i class="bi bi-bag-fill me-1"></i>Takeaway
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
                             <tr>
                                 <td><strong>Status:</strong></td>
                                 <td>
@@ -144,11 +161,11 @@ if($_SESSION["utype"]!="ADMIN"){
                                 </td>
                             </tr>
                             <tr>
-                                <td><strong>Pickup Time:</strong></td>
+                                <td><strong><?php echo ($order_type == 'dine-in') ? 'Arrival Time:' : 'Pickup Time:'; ?></strong></td>
                                 <td><?php echo !empty($order['pickup_time']) ? date('F j, Y H:i', strtotime($order['pickup_time'])) : 'Not specified'; ?></td>
                             </tr>
                             <tr>
-                                <td><strong>Pickup Notes:</strong></td>
+                                <td><strong>Special Notes:</strong></td>
                                 <td><?php echo !empty($order['pickup_notes']) ? htmlspecialchars($order['pickup_notes']) : 'No notes'; ?></td>
                             </tr>
                             <tr>
@@ -170,15 +187,12 @@ if($_SESSION["utype"]!="ADMIN"){
                     </div>
                     <div class="card-body">
                         <?php
-                        // Get food items for this transaction - FIXED VERSION
+                        // Get food items for this transaction
                         $food_query = "SELECT ti.*, f.f_name, f.f_price, f.f_image 
                                        FROM transaction_items ti 
                                        INNER JOIN food f ON ti.f_id = f.f_id 
                                        WHERE ti.tid = ?
                                        ORDER BY f.f_name";
-
-                        // DEBUG: Add error checking
-                        echo "<!-- DEBUG: Looking for items with TID: " . htmlspecialchars($tid) . " -->";
 
                         $food_stmt = $mysqli->prepare($food_query);
                         if (!$food_stmt) {
@@ -188,8 +202,6 @@ if($_SESSION["utype"]!="ADMIN"){
                         $food_stmt->bind_param("s", $tid);
                         $food_stmt->execute();
                         $food_result = $food_stmt->get_result();
-
-                        echo "<!-- DEBUG: Found " . $food_result->num_rows . " food items -->";
 
                         if($food_result->num_rows > 0){
                             ?>
@@ -202,6 +214,9 @@ if($_SESSION["utype"]!="ADMIN"){
                                             <th>Price</th>
                                             <th>Quantity</th>
                                             <th>Subtotal</th>
+                                            <?php if(!empty($order['pickup_notes'])): ?>
+                                            <th>Notes</th>
+                                            <?php endif; ?>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -230,12 +245,17 @@ if($_SESSION["utype"]!="ADMIN"){
                                                 <span class="badge bg-primary rounded-pill"><?php echo $food_row['quantity']; ?></span>
                                             </td>
                                             <td><strong>₹<?php echo number_format($subtotal, 2); ?></strong></td>
+                                            <?php if(!empty($order['pickup_notes'])): ?>
+                                            <td>
+                                                <?php echo !empty($food_row['notes']) ? htmlspecialchars($food_row['notes']) : '-'; ?>
+                                            </td>
+                                            <?php endif; ?>
                                         </tr>
                                         <?php } ?>
                                     </tbody>
                                     <tfoot class="bg-light">
                                         <tr>
-                                            <td colspan="4" class="text-end"><strong>Grand Total:</strong></td>
+                                            <td colspan="<?php echo (!empty($order['pickup_notes'])) ? '5' : '4'; ?>" class="text-end"><strong>Grand Total:</strong></td>
                                             <td><strong class="text-success">₹<?php echo number_format($grand_total, 2); ?></strong></td>
                                         </tr>
                                     </tfoot>
@@ -245,31 +265,8 @@ if($_SESSION["utype"]!="ADMIN"){
                         } else {
                             ?>
                             <div class="alert alert-danger">
-                                <h6><i class="bi bi-exclamation-triangle"></i> DEBUG: No Food Items Found</h6>
+                                <h6><i class="bi bi-exclamation-triangle"></i> No Food Items Found</h6>
                                 <p><strong>Transaction ID:</strong> <?php echo htmlspecialchars($tid); ?></p>
-                                
-                                <?php
-                                // DEBUG: Check what's actually in the database
-                                $debug_query = "SELECT COUNT(*) as count FROM transaction_items WHERE tid = ?";
-                                $debug_stmt = $mysqli->prepare($debug_query);
-                                $debug_stmt->bind_param("s", $tid);
-                                $debug_stmt->execute();
-                                $debug_result = $debug_stmt->get_result();
-                                $debug_row = $debug_result->fetch_array();
-                                ?>
-                                
-                                <p><strong>Items in transaction_items:</strong> <?php echo $debug_row['count']; ?></p>
-                                
-                                <?php
-                                // Check if items exist with different tid format
-                                $debug_query2 = "SELECT tid, COUNT(*) as count FROM transaction_items GROUP BY tid";
-                                $debug_result2 = $mysqli->query($debug_query2);
-                                echo "<p><strong>All TIDs in transaction_items:</strong><br>";
-                                while($debug_row2 = $debug_result2->fetch_array()){
-                                    echo "- " . htmlspecialchars($debug_row2['tid']) . " (" . $debug_row2['count'] . " items)<br>";
-                                }
-                                echo "</p>";
-                                ?>
                             </div>
                             <?php
                         }

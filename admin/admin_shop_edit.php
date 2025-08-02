@@ -20,12 +20,25 @@
              s_email = '{$s_email}', s_phoneno = '{$s_phoneno}'
             WHERE s_id = {$s_id};";
             $update_result = $mysqli -> query($update_query);
+            
             if(!empty($_FILES["s_pic"]["name"])){
+                // Define SITE_ROOT if not defined
+                if(!defined('SITE_ROOT')) {
+                    define('SITE_ROOT', $_SERVER['DOCUMENT_ROOT']);
+                }
+                
                 //Image upload
                 $target_dir = '/img/';
                 $temp = explode(".",$_FILES["s_pic"]["name"]);
                 $target_newfilename = "shop".$s_id.".".strtolower(end($temp));
                 $target_file = $target_dir.$target_newfilename;
+                
+                // Check if target directory exists, create if not
+                $full_target_dir = SITE_ROOT . $target_dir;
+                if(!is_dir($full_target_dir)) {
+                    mkdir($full_target_dir, 0755, true);
+                }
+                
                 if(move_uploaded_file($_FILES["s_pic"]["tmp_name"],SITE_ROOT.$target_file)){
                     $update_query = "UPDATE shop SET s_pic = '{$target_newfilename}' WHERE s_id = {$s_id};";
                     $update_result = $mysqli -> query($update_query);
@@ -62,7 +75,7 @@
             $result = $mysqli ->query($query);
             $row = $result -> fetch_array();
         ?>
-        <form method="POST" action="admin_shop_edit.php" class="form-floating" enctype="multipart/form-data">
+        <form method="POST" action="admin_shop_edit.php?s_id=<?php echo $s_id; ?>" class="form-floating" enctype="multipart/form-data">
             <h2 class="mt-4 mb-3 fw-normal text-bold"><i class="bi bi-pencil-square me-2"></i>Update Shop Information</h2>
             
             

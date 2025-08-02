@@ -30,6 +30,40 @@
             </a>
 
             <?php
+            // Handle shop status toggle
+            if(isset($_GET["toggle_status"]) && isset($_GET["s_id"])){
+                $shop_id = (int)$_GET["s_id"];
+                $new_status = $_GET["toggle_status"] === 'OPEN' ? 'OPEN' : 'CLOSED';
+                
+                $update_query = "UPDATE shop SET s_status = ? WHERE s_id = ?";
+                $stmt = $mysqli->prepare($update_query);
+                $stmt->bind_param("si", $new_status, $shop_id);
+                
+                if($stmt->execute()){
+                    $status_message = $new_status === 'OPEN' ? 'opened' : 'closed';
+                    ?>
+                    <div class="row row-cols-1 notibar">
+                        <div class="col mt-2 ms-2 p-2 bg-success text-white rounded text-start">
+                            <i class="bi bi-check-circle ms-2"></i>
+                            <span class="ms-2 mt-2">Shop successfully <?php echo $status_message; ?>.</span>
+                            <span class="me-2 float-end"><a class="text-decoration-none link-light" href="admin_shop_list.php">X</a></span>
+                        </div>
+                    </div>
+                    <?php
+                } else {
+                    ?>
+                    <div class="row row-cols-1 notibar">
+                        <div class="col mt-2 ms-2 p-2 bg-danger text-white rounded text-start">
+                            <i class="bi bi-x-circle ms-2"></i>
+                            <span class="ms-2 mt-2">Failed to update shop status.</span>
+                            <span class="me-2 float-end"><a class="text-decoration-none link-light" href="admin_shop_list.php">X</a></span>
+                        </div>
+                    </div>
+                    <?php
+                }
+                $stmt->close();
+            }
+
             if(isset($_GET["up_spf"])){
                 if($_GET["up_spf"]==1){
                     ?>
@@ -128,11 +162,11 @@
 
         <?php
             if(!isset($_GET["search"])){
-                $search_query = "SELECT s_id,s_username,s_name,s_location,s_email,s_phoneno FROM shop;";
+                $search_query = "SELECT s_id,s_username,s_name,s_location,s_email,s_phoneno,s_status FROM shop;";
             }else{
                 $search_un=$_GET["un"];
                 $search_sn=$_GET["sn"];
-                $search_query = "SELECT s_id,s_username,s_name,s_location,s_email,s_phoneno FROM shop
+                $search_query = "SELECT s_id,s_username,s_name,s_location,s_email,s_phoneno,s_status FROM shop
                 WHERE s_username LIKE '%{$search_un}%' AND s_name LIKE '%{$search_sn}%';";
             }
             $search_result = $mysqli -> query($search_query);
@@ -158,6 +192,7 @@
                     <th scope="col">Shop name</th>
                     <th scope="col">Location</th>
                     <th scope="col">Contact</th>
+                    <th scope="col">Status</th>
                     <th scope="col">Action</th>
                 </tr>
             </thead>
@@ -168,17 +203,44 @@
                     <td><?php echo $row["s_username"];?></td>
                     <td><?php echo $row["s_name"];?></td>
                     <td class="text-wrap"><?php echo $row["s_location"];?></td>
-                    
-                    
-                    
                     <td class="small"><?php echo $row["s_email"];?><br/><?php echo "(+91) ".$row["s_phoneno"];?></td>
                     <td>
-                        <a href="admin_shop_detail.php?s_id=<?php echo $row["s_id"]?>"
-                            class="btn btn-sm btn-primary">View</a>
-                        <a href="admin_shop_edit.php?s_id=<?php echo $row["s_id"]?>"
-                            class="btn btn-sm btn-outline-success">Edit</a>
-                        <a href="admin_shop_delete.php?s_id=<?php echo $row["s_id"]?>"
-                            class="btn btn-sm btn-outline-danger">Delete</a>
+                        <?php if($row["s_status"] == 'OPEN'){ ?>
+                            <span class="badge bg-success">
+                                <i class="bi bi-shop"></i> OPEN
+                            </span>
+                        <?php } else { ?>
+                            <span class="badge bg-danger">
+                                <i class="bi bi-shop-window"></i> CLOSED
+                            </span>
+                        <?php } ?>
+                    </td>
+                    <td>
+                        <div class="btn-group-vertical btn-group-sm" role="group">
+                            <div class="btn-group btn-group-sm mb-1" role="group">
+                                <a href="admin_shop_detail.php?s_id=<?php echo $row["s_id"]?>"
+                                    class="btn btn-sm btn-primary">View</a>
+                                <a href="admin_shop_edit.php?s_id=<?php echo $row["s_id"]?>"
+                                    class="btn btn-sm btn-outline-success">Edit</a>
+                                <a href="admin_shop_delete.php?s_id=<?php echo $row["s_id"]?>"
+                                    class="btn btn-sm btn-outline-danger">Delete</a>
+                            </div>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <?php if($row["s_status"] == 'OPEN'){ ?>
+                                    <a href="admin_shop_list.php?toggle_status=CLOSED&s_id=<?php echo $row["s_id"]?>"
+                                        class="btn btn-sm btn-warning"
+                                        onclick="return confirm('Are you sure you want to close this shop?')">
+                                        <i class="bi bi-lock-fill"></i> Close Shop
+                                    </a>
+                                <?php } else { ?>
+                                    <a href="admin_shop_list.php?toggle_status=OPEN&s_id=<?php echo $row["s_id"]?>"
+                                        class="btn btn-sm btn-success"
+                                        onclick="return confirm('Are you sure you want to open this shop?')">
+                                        <i class="bi bi-unlock-fill"></i> Open Shop
+                                    </a>
+                                <?php } ?>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 <?php } ?>

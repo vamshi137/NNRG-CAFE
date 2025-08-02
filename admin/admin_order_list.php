@@ -12,7 +12,6 @@
         }
     ?>
     <meta charset="UTF-8">
-     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="../img/ICON_F.png" rel="icon">
     <link href="../css/main.css" rel="stylesheet">
@@ -196,6 +195,20 @@
                             <?php } ?>
                         </select>
                     </div>
+                    <!-- NEW: Order Type Filter -->
+                    <div class="col">
+                        <select class="form-select" id="ordertype" name="ot">
+                            <?php if(isset($_GET["search"])){?>
+                            <option selected value="">Order Type</option>
+                            <option value="dine-in" <?php if(isset($_GET["ot"]) && $_GET["ot"]=="dine-in"){ echo "selected";}?>>Dine-In</option>
+                            <option value="takeaway" <?php if(isset($_GET["ot"]) && $_GET["ot"]=="takeaway"){ echo "selected";}?>>Takeaway</option>
+                            <?php }else{ ?>
+                            <option selected value="">Order Type</option>
+                            <option value="dine-in">Dine-In</option>
+                            <option value="takeaway">Takeaway</option>
+                            <?php } ?>
+                        </select>
+                    </div>
                     <div class="col-auto">
                         <button type="submit" name="search" value="1" class="btn btn-success"
                         <?php if($opt_row==0){echo "disabled";} ?>>Search</button>
@@ -208,7 +221,7 @@
     </div>
 
     <?php
-        // Build query based on search parameters
+        // Build query based on search parameters (UPDATED to include order_type)
         $where_conditions = array();
         
         if(isset($_GET["search"])){
@@ -224,6 +237,9 @@
             if(!empty($_GET["os"])){ 
                 $where_conditions[] = "t.order_status = '{$_GET['os']}'"; 
             }
+            if(!empty($_GET["ot"])){ // NEW: Order type filter
+                $where_conditions[] = "t.order_type = '{$_GET['ot']}'"; 
+            }
         }
         
         $where_clause = "";
@@ -231,9 +247,9 @@
             $where_clause = "WHERE " . implode(" AND ", $where_conditions);
         }
         
-        // FIXED: Simplified query without complex GROUP_CONCAT
+        // UPDATED: Query now includes order_type
         $query = "SELECT t.id, t.tid, t.c_id, t.order_cost, t.name, t.email, t.rollno, 
-                         t.year, t.branch_section, t.pickup_time, t.pickup_notes, t.created_at, t.order_status
+                         t.year, t.branch_section, t.pickup_time, t.pickup_notes, t.created_at, t.order_status, t.order_type
                   FROM transaction t 
                   $where_clause 
                   ORDER BY t.created_at DESC";
@@ -255,6 +271,7 @@
                         <th scope="col">Transaction ID</th>
                         <th scope="col">Customer Details</th>
                         <th scope="col">Food Items</th>
+                        <th scope="col">Order Type</th><!-- NEW COLUMN -->
                         <th scope="col">Order Status</th>
                         <th scope="col">Order Date</th>
                         <th scope="col">Order Cost</th>
@@ -264,7 +281,7 @@
                 <tbody>
                     <?php $i=1; while($row = $result->fetch_array()){ 
                     
-                        // FIXED: Get food items for each order separately
+                        // Get food items for each order separately
                         $food_query = "SELECT f.f_name, ti.quantity 
                                        FROM transaction_items ti 
                                        INNER JOIN food f ON ti.f_id = f.f_id 
@@ -314,6 +331,20 @@
                                 ?>
                             </small>
                         </td>
+                        <!-- NEW: Order Type Column -->
+                        <td>
+                            <?php 
+                            $order_type = $row['order_type'] ?? 'takeaway'; // Default fallback
+                            if($order_type == 'dine-in'): ?>
+                                <span class="badge bg-primary rounded-pill">
+                                    <i class="bi bi-house-door-fill me-1"></i>Dine-In
+                                </span>
+                            <?php else: ?>
+                                <span class="badge bg-success rounded-pill">
+                                    <i class="bi bi-bag-fill me-1"></i>Takeaway
+                                </span>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <?php if($row["order_status"]=="VRFY"){ ?>
                                 <span class="fw-bold badge rounded-pill bg-info text-dark">Verifying</span>
@@ -336,7 +367,6 @@
                         <td><strong class="text-success">₹<?php echo number_format($row["order_cost"], 2);?></strong></td>
                         <td>
                             <div class="btn-group-vertical" role="group">
-                                <!-- FIXED: View button now redirects to admin_order_detail.php instead of admin_food_detail.php -->
                                 <a href="admin_order_detail.php?tid=<?php echo urlencode($row["tid"]); ?>" 
                                    class="btn btn-sm btn-primary mb-1" 
                                    title="View Order Details - TID: <?php echo htmlspecialchars($row["tid"]); ?>">View</a>
