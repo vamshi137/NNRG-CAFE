@@ -56,6 +56,42 @@ ini_set('display_errors', 1);
             background-color: #6c757d !important;
             border-color: #6c757d !important;
         }
+
+        /* Instagram Section Styles */
+        .instagram-section {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin: 1rem 0;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .instagram-icon {
+            color: #e4405f;
+            font-size: 1.2rem;
+            margin-right: 8px;
+        }
+
+        .instagram-btn {
+            background: #e4405f;
+            border: none;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .instagram-btn:hover {
+            background: #d63384;
+            color: white;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body class="d-flex flex-column h-100">
@@ -182,6 +218,19 @@ ini_set('display_errors', 1);
         ?>
         </div>
         <!-- END GRID SHOP SELECTION -->
+
+        <!-- Instagram Section -->
+        <div class="instagram-section">
+            <i class="bi bi-instagram instagram-icon"></i>
+            Join our community: 
+            <a href="https://www.instagram.com/nnrg_group/" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="instagram-btn ms-2">
+                @nnrg_group
+            </a>
+        </div>
+        <!-- End Instagram Section -->
 
     </div>
     <?php include('footer.php')?>

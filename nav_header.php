@@ -17,7 +17,6 @@
         <?php if(isset($_SESSION['cid'])){ ?>
             <li class="nav-item">
                 <a href="cust_order_history.php" class="nav-link px-2 text-dark">Order History</a>
-
             </li>
         <?php } ?>
       </ul>
@@ -30,36 +29,75 @@
                 <li class="nav-item">
                     <a href="cust_cart.php" class="btn btn-light" type="button">My Cart
                         <?php
+                        // Force fresh query each time
                         $incart_query="SELECT SUM(ct_amount) AS incart_amt FROM cart WHERE c_id={$_SESSION['cid']}";
-                        $incart_result = $mysqli -> query($incart_query) -> fetch_array();
-                        $incart_amt = $incart_result["incart_amt"];
-                        if($incart_amt>0){ ?>
-                        <span class="ms-1 badge bg-success">
+                        $incart_result = $mysqli -> query($incart_query);
+                        if($incart_result && $incart_row = $incart_result->fetch_array()) {
+                            $incart_amt = $incart_row["incart_amt"] ? $incart_row["incart_amt"] : 0;
+                        } else {
+                            $incart_amt = 0;
+                        }
+                        
+                        if($incart_amt > 0){ ?>
+                        <span class="ms-1 badge bg-success" id="cart-badge">
                             <?php echo $incart_amt;?>
                         </span>
                         <?php }else{ ?>
-                            <span class="ms-1 badge bg-secondary">0</span>
+                            <span class="ms-1 badge bg-secondary" id="cart-badge">0</span>
                         <?php } ?>
                     </a>
-
                 </li>
                 <li class="nav-item">
                     <a href="cust_profile.php" class="nav-link px-2 text-dark">
                         Welcome, <?=$_SESSION['firstname']?>
                         <i class="bi bi-person-circle"></i>
-
                     </a>
-
                 </li>
                 <li class="nav-item">
                     <a href="logout.php" class="mx-2 mt-1 mt-md-0 btn btn-outline-danger">Log Out</a>
-
                 </li>
-
             </ul>
         <?php } ?>
-
       </div>
     </div>
   </div>
 </header>
+
+<script>
+// Better solution: Update cart count via AJAX instead of full page refresh
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        // Page was loaded from cache (back button was used)
+        // Update only the cart count, don't refresh entire page
+        updateCartCount();
+    }
+});
+
+// Function to update cart count without refreshing page
+function updateCartCount() {
+    <?php if(isset($_SESSION['cid'])){ ?>
+    fetch('get_cart_count.php')
+    .then(response => response.text())
+    .then(data => {
+        const cartBadge = document.getElementById('cart-badge');
+        if (cartBadge) {
+            const count = parseInt(data) || 0;
+            cartBadge.textContent = count;
+            if (count > 0) {
+                cartBadge.className = 'ms-1 badge bg-success';
+            } else {
+                cartBadge.className = 'ms-1 badge bg-secondary';
+            }
+        }
+    })
+    .catch(error => {
+        console.log('Cart count update failed:', error);
+    });
+    <?php } ?>
+}
+
+// Update cart count when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartCount();
+});
+</script>

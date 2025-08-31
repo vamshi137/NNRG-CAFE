@@ -1,5 +1,5 @@
 <?php
-// verify_transaction.php - Updated Version with Order Type Support
+// verify_transaction.php - Updated Version with Order Type and Takeaway Charges Support
 session_start();
 
 // Enable error reporting for debugging
@@ -54,9 +54,9 @@ foreach ($_POST as $key => $value) {
     echo "$key: $value<br>";
 }
 
-// Validate required fields (UPDATED to include order_type)
+// Validate required fields (UPDATED to include order_type and final_amount)
 echo "Step 7: Checking required fields...<br>";
-$required_fields = ['name', 'email', 'rollno', 'year', 'branch_section', 'tid', 'cftid', 'tandc', 'order_type'];
+$required_fields = ['name', 'email', 'rollno', 'year', 'branch_section', 'tid', 'cftid', 'tandc', 'order_type', 'final_amount'];
 $missing_fields = [];
 
 foreach ($required_fields as $field) {
@@ -84,7 +84,15 @@ if (!in_array($_POST['order_type'], $valid_order_types)) {
     exit();
 }
 
-// Process the form data (UPDATED to include order_type)
+// Validate final_amount is numeric
+if (!is_numeric($_POST['final_amount']) || $_POST['final_amount'] <= 0) {
+    echo "Invalid final amount: " . $_POST['final_amount'] . "<br>";
+    $_SESSION['error'] = "Invalid order amount.";
+    header("Location: payment.php");
+    exit();
+}
+
+// Process the form data (UPDATED to include order_type and final_amount)
 echo "Step 8: Processing data...<br>";
 $customer_id = $_SESSION['cid'];
 $name = mysqli_real_escape_string($conn, trim($_POST['name']));
@@ -94,11 +102,13 @@ $year = mysqli_real_escape_string($conn, trim($_POST['year']));
 $branch_section = mysqli_real_escape_string($conn, trim($_POST['branch_section']));
 $tid = mysqli_real_escape_string($conn, trim($_POST['tid']));
 $cftid = mysqli_real_escape_string($conn, trim($_POST['cftid']));
-$order_type = mysqli_real_escape_string($conn, trim($_POST['order_type'])); // NEW
+$order_type = mysqli_real_escape_string($conn, trim($_POST['order_type'])); 
+$final_amount = floatval($_POST['final_amount']); // NEW: Get final amount from form
 $delivery_time = !empty($_POST['delivery_time']) ? mysqli_real_escape_string($conn, trim($_POST['delivery_time'])) : null;
 $delivery_notes = !empty($_POST['delivery_notes']) ? mysqli_real_escape_string($conn, trim($_POST['delivery_notes'])) : null;
 
 echo "Order Type Selected: $order_type<br>";
+echo "Final Amount from Form: ₹$final_amount<br>";
 
 // Validate Transaction IDs match
 if ($tid !== $cftid) {
@@ -133,10 +143,10 @@ if ($stmt) {
     mysqli_stmt_close($stmt);
 }
 
-// Step 9: Process cart items BEFORE creating transaction
-echo "Step 9: CRITICAL - Processing cart items FIRST...<br>";
+// Step 9: Process cart items and validate amounts
+echo "Step 9: Processing cart items and validating amounts...<br>";
 $cart_items = [];
-$order_total = 0;
+$cart_total = 0;
 
 try {
     $cart_query = "SELECT 
@@ -177,12 +187,12 @@ try {
     while ($cart_item = mysqli_fetch_assoc($cart_result)) {
         $cart_items[] = $cart_item;
         $item_total = $cart_item['f_price'] * $cart_item['quantity'];
-        $order_total += $item_total;
+        $cart_total += $item_total;
         
         echo "- {$cart_item['f_name']}: {$cart_item['quantity']} × ₹{$cart_item['f_price']} = ₹{$item_total}<br>";
     }
     
-    echo "Total cart value: ₹{$order_total}<br>";
+    echo "Cart total: ₹{$cart_total}<br>";
     
     mysqli_stmt_close($cart_stmt);
     
@@ -193,7 +203,34 @@ try {
     exit();
 }
 
-// Step 10: Create the main transaction record (UPDATED to include order_type)
+// Step 9.5: Calculate expected total and validate against submitted amount
+echo "Step 9.5: Validating order amount...<br>";
+$takeaway_charge = 5.00; // Fixed takeaway charge
+$expected_total = $cart_total;
+
+if ($order_type === 'takeaway') {
+    $expected_total += $takeaway_charge;
+    echo "Adding takeaway charge: ₹{$takeaway_charge}<br>";
+}
+
+echo "Expected total: ₹{$expected_total}<br>";
+echo "Submitted total: ₹{$final_amount}<br>";
+
+// Validate the amounts match (allow small floating point differences)
+if (abs($expected_total - $final_amount) > 0.01) {
+    echo "ERROR: Amount mismatch!<br>";
+    echo "Expected: ₹{$expected_total}, Received: ₹{$final_amount}<br>";
+    $_SESSION['error'] = "Order amount verification failed. Please refresh the page and try again.";
+    header("Location: payment.php");
+    exit();
+}
+
+echo "✅ Amount validation successful!<br>";
+
+// Use the validated final amount for the order
+$order_total = $final_amount;
+
+// Step 10: Create the main transaction record (UPDATED to use final_amount)
 echo "Step 10: Inserting transaction record...<br>";
 $pickup_time = $delivery_time ? $delivery_time : null;
 $pickup_notes = $delivery_notes ? $delivery_notes : null;
@@ -209,11 +246,11 @@ if (!$insert_stmt) {
     exit();
 }
 
-// Bind parameters (UPDATED to include order_type)
+// Bind parameters (using order_total which is the validated final_amount)
 mysqli_stmt_bind_param($insert_stmt, "sidssssssss", 
     $tid,           // s - string
     $customer_id,   // i - integer  
-    $order_total,   // d - decimal
+    $order_total,   // d - decimal (this is the final amount including takeaway charges)
     $name,          // s - string
     $email,         // s - string
     $rollno,        // s - string
@@ -221,7 +258,7 @@ mysqli_stmt_bind_param($insert_stmt, "sidssssssss",
     $branch_section,// s - string
     $pickup_time,   // s - string (can be NULL)
     $pickup_notes,  // s - string (can be NULL)
-    $order_type     // s - string - NEW
+    $order_type     // s - string
 );
 
 // Execute the transaction insert
@@ -269,6 +306,16 @@ try {
         echo "✅ Successfully added: {$cart_item['f_name']} x{$quantity}<br>";
     }
     
+    // If takeaway order, add takeaway charge as a separate line item (optional)
+    if ($order_type === 'takeaway') {
+        echo "Adding takeaway charge as line item...<br>";
+        $takeaway_notes = "Takeaway service charge";
+        
+        // Insert takeaway charge (you might want to create a special food item for this, or handle differently)
+        // For now, we'll just log it - the total amount already includes it
+        echo "✅ Takeaway charge (₹{$takeaway_charge}) included in order total<br>";
+    }
+    
     echo "🎉 SUCCESS: Added $items_added items to transaction_items!<br>";
     mysqli_stmt_close($item_stmt);
     
@@ -296,6 +343,8 @@ echo "Step 13: Setting success session data...<br>";
 $_SESSION['last_order_id'] = $insert_id;
 $_SESSION['last_transaction_id'] = $tid;
 $_SESSION['transaction_success'] = true;
+$_SESSION['order_type'] = $order_type; // Store order type for success page
+$_SESSION['order_total'] = $order_total; // Store final total for success page
 
 echo "Step 14: Redirecting to success page...<br>";
 
@@ -304,6 +353,7 @@ echo "Final verification before redirect:<br>";
 echo "- Transaction ID: $tid<br>";
 echo "- Order ID: $insert_id<br>";
 echo "- Order Type: $order_type<br>";
+echo "- Final Amount: ₹$order_total<br>";
 echo "- Items processed: " . count($cart_items) . "<br>";
 
 // Redirect to success page

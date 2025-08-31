@@ -90,6 +90,7 @@
                 }
             }
 
+            // Original status update notifications
             if(isset($_GET["up_ods"])){
                 if($_GET["up_ods"]==1){
                     ?>
@@ -113,6 +114,34 @@
             <!-- END FAILED UPDATE ORDER STATUS -->
             <?php }
                 }
+
+            // Email notification success message
+            if(isset($_GET["email_sent"]) && $_GET["email_sent"] == 1){
+                ?>
+                <!-- EMAIL NOTIFICATION SUCCESS -->
+                <div class="row row-cols-1 notibar">
+                    <div class="col mt-2 ms-2 p-2 bg-success text-white rounded text-start">
+                        <i class="bi bi-envelope-check ms-2"></i>
+                        <span class="ms-2 mt-2">Order status updated and customer notified via email! 📧</span>
+                        <span class="me-2 float-end"><a class="text-decoration-none link-light" href="admin_order_list.php">X</a></span>
+                    </div>
+                </div>
+                <?php
+            }
+
+            // Email notification failed message
+            if(isset($_GET["email_failed"]) && $_GET["email_failed"] == 1){
+                ?>
+                <!-- EMAIL NOTIFICATION FAILED -->
+                <div class="row row-cols-1 notibar">
+                    <div class="col mt-2 ms-2 p-2 bg-warning text-dark rounded text-start">
+                        <i class="bi bi-envelope-x ms-2"></i>
+                        <span class="ms-2 mt-2">Order status updated but email notification failed to send.</span>
+                        <span class="me-2 float-end"><a class="text-decoration-none link-dark" href="admin_order_list.php">X</a></span>
+                    </div>
+                </div>
+                <?php
+            }
             ?>
 
             <h2 class="pt-3 display-6">Order List</h2>
@@ -174,6 +203,10 @@
                             <?php } ?>
                         </select>
                     </div>
+                </div>
+                
+                <!-- Second Row for Filters -->
+                <div class="row g-2 mt-2">
                     <div class="col">
                         <select class="form-select" id="orderstatus" name="os">
                             <?php if(isset($_GET["search"])){?>
@@ -195,7 +228,6 @@
                             <?php } ?>
                         </select>
                     </div>
-                    <!-- NEW: Order Type Filter -->
                     <div class="col">
                         <select class="form-select" id="ordertype" name="ot">
                             <?php if(isset($_GET["search"])){?>
@@ -209,19 +241,70 @@
                             <?php } ?>
                         </select>
                     </div>
+                    
+                    <!-- NEW: Date Filter Options -->
+                    <div class="col">
+                        <select class="form-select" id="datefilter" name="date_filter" onchange="toggleDateInputs()">
+                            <?php if(isset($_GET["search"])){?>
+                            <option selected value="">Date Filter</option>
+                            <option value="today" <?php if(isset($_GET["date_filter"]) && $_GET["date_filter"]=="today"){ echo "selected";}?>>Today</option>
+                            <option value="yesterday" <?php if(isset($_GET["date_filter"]) && $_GET["date_filter"]=="yesterday"){ echo "selected";}?>>Yesterday</option>
+                            <option value="last_7_days" <?php if(isset($_GET["date_filter"]) && $_GET["date_filter"]=="last_7_days"){ echo "selected";}?>>Last 7 Days</option>
+                            <option value="last_30_days" <?php if(isset($_GET["date_filter"]) && $_GET["date_filter"]=="last_30_days"){ echo "selected";}?>>Last 30 Days</option>
+                            <option value="custom_date" <?php if(isset($_GET["date_filter"]) && $_GET["date_filter"]=="custom_date"){ echo "selected";}?>>Specific Date</option>
+                            <option value="date_range" <?php if(isset($_GET["date_filter"]) && $_GET["date_filter"]=="date_range"){ echo "selected";}?>>Date Range</option>
+                            <?php }else{ ?>
+                            <option selected value="">Date Filter</option>
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="last_7_days">Last 7 Days</option>
+                            <option value="last_30_days">Last 30 Days</option>
+                            <option value="custom_date">Specific Date</option>
+                            <option value="date_range">Date Range</option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    
+                    <!-- Custom Date Input (initially hidden) -->
+                    <div class="col" id="custom_date_input" style="display: <?php echo (isset($_GET['date_filter']) && $_GET['date_filter'] == 'custom_date') ? 'block' : 'none'; ?>;">
+                        <input type="date" class="form-control" id="specific_date" name="specific_date" 
+                               value="<?php echo isset($_GET['specific_date']) ? $_GET['specific_date'] : ''; ?>" 
+                               max="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    
                     <div class="col-auto">
                         <button type="submit" name="search" value="1" class="btn btn-success"
-                        <?php if($opt_row==0){echo "disabled";} ?>>Search</button>
+                        <?php if($opt_row==0){echo "disabled";} ?>>
+                        <i class="bi bi-search me-1"></i>Search</button>
                         <button type="reset" class="btn btn-danger"
-                            onclick="javascript: window.location='admin_order_list.php'">Clear</button>
+                            onclick="javascript: window.location='admin_order_list.php'">
+                        <i class="bi bi-x-circle me-1"></i>Clear</button>
                     </div>
+                </div>
+                
+                <!-- Date Range Inputs (initially hidden) -->
+                <div class="row g-2 mt-2" id="date_range_inputs" style="display: <?php echo (isset($_GET['date_filter']) && $_GET['date_filter'] == 'date_range') ? 'flex' : 'none'; ?>;">
+                    <div class="col">
+                        <label for="start_date" class="form-label small text-muted">From Date</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" 
+                               value="<?php echo isset($_GET['start_date']) ? $_GET['start_date'] : ''; ?>" 
+                               max="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    <div class="col">
+                        <label for="end_date" class="form-label small text-muted">To Date</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" 
+                               value="<?php echo isset($_GET['end_date']) ? $_GET['end_date'] : ''; ?>" 
+                               max="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    <div class="col"></div> <!-- Empty column for spacing -->
+                    <div class="col"></div> <!-- Empty column for spacing -->
                 </div>
             </form>
         </div>
     </div>
 
     <?php
-        // Build query based on search parameters (UPDATED to include order_type)
+        // Build query based on search parameters (UPDATED to include date filtering)
         $where_conditions = array();
         
         if(isset($_GET["search"])){
@@ -237,8 +320,50 @@
             if(!empty($_GET["os"])){ 
                 $where_conditions[] = "t.order_status = '{$_GET['os']}'"; 
             }
-            if(!empty($_GET["ot"])){ // NEW: Order type filter
+            if(!empty($_GET["ot"])){ 
                 $where_conditions[] = "t.order_type = '{$_GET['ot']}'"; 
+            }
+            
+            // NEW: Date filtering logic
+            if(!empty($_GET["date_filter"])){
+                $date_filter = $_GET["date_filter"];
+                $current_date = date('Y-m-d');
+                
+                switch($date_filter){
+                    case 'today':
+                        $where_conditions[] = "DATE(t.created_at) = '$current_date'";
+                        break;
+                        
+                    case 'yesterday':
+                        $yesterday = date('Y-m-d', strtotime('-1 day'));
+                        $where_conditions[] = "DATE(t.created_at) = '$yesterday'";
+                        break;
+                        
+                    case 'last_7_days':
+                        $seven_days_ago = date('Y-m-d', strtotime('-7 days'));
+                        $where_conditions[] = "DATE(t.created_at) BETWEEN '$seven_days_ago' AND '$current_date'";
+                        break;
+                        
+                    case 'last_30_days':
+                        $thirty_days_ago = date('Y-m-d', strtotime('-30 days'));
+                        $where_conditions[] = "DATE(t.created_at) BETWEEN '$thirty_days_ago' AND '$current_date'";
+                        break;
+                        
+                    case 'custom_date':
+                        if(!empty($_GET["specific_date"])){
+                            $specific_date = $_GET["specific_date"];
+                            $where_conditions[] = "DATE(t.created_at) = '$specific_date'";
+                        }
+                        break;
+                        
+                    case 'date_range':
+                        if(!empty($_GET["start_date"]) && !empty($_GET["end_date"])){
+                            $start_date = $_GET["start_date"];
+                            $end_date = $_GET["end_date"];
+                            $where_conditions[] = "DATE(t.created_at) BETWEEN '$start_date' AND '$end_date'";
+                        }
+                        break;
+                }
             }
         }
         
@@ -247,7 +372,7 @@
             $where_clause = "WHERE " . implode(" AND ", $where_conditions);
         }
         
-        // UPDATED: Query now includes order_type
+        // Query includes date filtering
         $query = "SELECT t.id, t.tid, t.c_id, t.order_cost, t.name, t.email, t.rollno, 
                          t.year, t.branch_section, t.pickup_time, t.pickup_notes, t.created_at, t.order_status, t.order_type
                   FROM transaction t 
@@ -262,16 +387,43 @@
             <!-- GRID EACH MENU -->
             <div class="table-responsive">
             <table class="table rounded-5 table-light table-striped table-hover align-middle caption-top mb-3">
-                <caption><?php echo $numrow;?> order(s) <?php if(isset($_GET["search"])){?><br /><a
-                        href="admin_order_list.php" class="text-decoration-none text-danger">Clear Search
-                        Result</a><?php } ?></caption>
+                <caption>
+                    <?php echo $numrow;?> order(s) found
+                    <?php 
+                    // Show active date filter info
+                    if(isset($_GET["search"]) && !empty($_GET["date_filter"])){
+                        $filter_text = "";
+                        switch($_GET["date_filter"]){
+                            case 'today': $filter_text = "for Today (" . date('F j, Y') . ")"; break;
+                            case 'yesterday': $filter_text = "for Yesterday (" . date('F j, Y', strtotime('-1 day')) . ")"; break;
+                            case 'last_7_days': $filter_text = "for Last 7 Days"; break;
+                            case 'last_30_days': $filter_text = "for Last 30 Days"; break;
+                            case 'custom_date': 
+                                if(!empty($_GET["specific_date"])){
+                                    $filter_text = "for " . date('F j, Y', strtotime($_GET["specific_date"]));
+                                }
+                                break;
+                            case 'date_range':
+                                if(!empty($_GET["start_date"]) && !empty($_GET["end_date"])){
+                                    $filter_text = "from " . date('F j, Y', strtotime($_GET["start_date"])) . 
+                                                  " to " . date('F j, Y', strtotime($_GET["end_date"]));
+                                }
+                                break;
+                        }
+                        echo " <span class='text-info'>$filter_text</span>";
+                    }
+                    ?>
+                    <?php if(isset($_GET["search"])){?><br /><a
+                            href="admin_order_list.php" class="text-decoration-none text-danger">
+                            <i class="bi bi-x-circle me-1"></i>Clear Search Result</a><?php } ?>
+                </caption>
                 <thead class="bg-light">
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Transaction ID</th>
                         <th scope="col">Customer Details</th>
                         <th scope="col">Food Items</th>
-                        <th scope="col">Order Type</th><!-- NEW COLUMN -->
+                        <th scope="col">Order Type</th>
                         <th scope="col">Order Status</th>
                         <th scope="col">Order Date</th>
                         <th scope="col">Order Cost</th>
@@ -331,10 +483,9 @@
                                 ?>
                             </small>
                         </td>
-                        <!-- NEW: Order Type Column -->
                         <td>
                             <?php 
-                            $order_type = $row['order_type'] ?? 'takeaway'; // Default fallback
+                            $order_type = $row['order_type'] ?? 'takeaway';
                             if($order_type == 'dine-in'): ?>
                                 <span class="badge bg-primary rounded-pill">
                                     <i class="bi bi-house-door-fill me-1"></i>Dine-In
@@ -347,17 +498,29 @@
                         </td>
                         <td>
                             <?php if($row["order_status"]=="VRFY"){ ?>
-                                <span class="fw-bold badge rounded-pill bg-info text-dark">Verifying</span>
+                                <span class="fw-bold badge rounded-pill bg-info text-dark">
+                                    <i class="bi bi-hourglass-split me-1"></i>Verifying
+                                </span>
                             <?php }else if($row["order_status"]=="ACPT"){ ?>
-                                <span class="fw-bold badge rounded-pill bg-secondary text-white">Accepted</span>
+                                <span class="fw-bold badge rounded-pill bg-secondary text-white">
+                                    <i class="bi bi-check-circle me-1"></i>Accepted
+                                </span>
                             <?php }else if($row["order_status"]=="PREP"){ ?>
-                                <span class="fw-bold badge rounded-pill bg-warning text-dark">Preparing</span>
+                                <span class="fw-bold badge rounded-pill bg-warning text-dark">
+                                    <i class="bi bi-clock-history me-1"></i>Preparing
+                                </span>
                             <?php }else if($row["order_status"]=="RDPK"){ ?>
-                                <span class="fw-bold badge rounded-pill bg-primary text-white">Ready to pick up</span>
+                                <span class="fw-bold badge rounded-pill bg-primary text-white">
+                                    <i class="bi bi-bell me-1"></i>Ready - Customer Notified 📧
+                                </span>
                             <?php }else if($row["order_status"]=="FNSH"){?>
-                                <span class="fw-bold badge rounded-pill bg-success text-white">Completed</span>
+                                <span class="fw-bold badge rounded-pill bg-success text-white">
+                                    <i class="bi bi-check2-all me-1"></i>Completed
+                                </span>
                             <?php }else if($row["order_status"]=="CNCL"){?>
-                                <span class="fw-bold badge rounded-pill bg-danger text-white">Cancelled</span>
+                                <span class="fw-bold badge rounded-pill bg-danger text-white">
+                                    <i class="bi bi-x-circle me-1"></i>Cancelled
+                                </span>
                             <?php } ?>
                         </td>
                         <td><?php 
@@ -371,7 +534,13 @@
                                    class="btn btn-sm btn-primary mb-1" 
                                    title="View Order Details - TID: <?php echo htmlspecialchars($row["tid"]); ?>">View</a>
                                 <a href="admin_order_update.php?tid=<?php echo urlencode($row["tid"]); ?>" 
-                                   class="btn btn-sm btn-outline-success mb-1">Update Status</a>
+                                   class="btn btn-sm btn-outline-success mb-1">
+                                   <?php if($row["order_status"]=="RDPK"){ ?>
+                                       📧 Update Status
+                                   <?php } else { ?>
+                                       Update Status
+                                   <?php } ?>
+                                </a>
                                 <button class="btn btn-sm btn-outline-danger" 
                                         onclick="deleteOrder('<?php echo htmlspecialchars($row['tid'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($row['name'], ENT_QUOTES); ?>')">Delete</button>
                             </div>
@@ -406,7 +575,85 @@
             window.location.href = 'admin_order_list.php?delete_order=1&tid=' + encodeURIComponent(tid);
         }
     }
+
+    // Function to toggle date input fields based on selected filter type
+    function toggleDateInputs() {
+        var dateFilter = document.getElementById('datefilter').value;
+        var customDateInput = document.getElementById('custom_date_input');
+        var dateRangeInputs = document.getElementById('date_range_inputs');
+        
+        // Hide all date inputs first
+        customDateInput.style.display = 'none';
+        dateRangeInputs.style.display = 'none';
+        
+        // Show relevant inputs based on selection
+        if (dateFilter === 'custom_date') {
+            customDateInput.style.display = 'block';
+        } else if (dateFilter === 'date_range') {
+            dateRangeInputs.style.display = 'flex';
+        }
+    }
+
+    // Quick date filter buttons functionality
+    function setDateFilter(filterType) {
+        var dateFilterSelect = document.getElementById('datefilter');
+        dateFilterSelect.value = filterType;
+        toggleDateInputs();
+        
+        // Auto-submit form for quick filters
+        if (['today', 'yesterday', 'last_7_days', 'last_30_days'].includes(filterType)) {
+            document.querySelector('form').submit();
+        }
+    }
+
+    // Initialize date inputs visibility on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleDateInputs();
+    });
+
+    // Add date validation
+    document.getElementById('end_date')?.addEventListener('change', function() {
+        var startDate = document.getElementById('start_date').value;
+        var endDate = this.value;
+        
+        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+            alert('End date cannot be earlier than start date');
+            this.value = '';
+        }
+    });
+
+    document.getElementById('start_date')?.addEventListener('change', function() {
+        var startDate = this.value;
+        var endDate = document.getElementById('end_date').value;
+        
+        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+            document.getElementById('end_date').value = '';
+        }
+    });
     </script>
+
+    <!-- Quick Date Filter Buttons (Optional Enhancement) -->
+    <div class="container mb-3">
+        <div class="row">
+            <div class="col">
+                <div class="btn-group btn-group-sm" role="group" aria-label="Quick date filters">
+                    <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('today')">
+                        <i class="bi bi-calendar-day me-1"></i>Today
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('yesterday')">
+                        <i class="bi bi-calendar-minus me-1"></i>Yesterday
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('last_7_days')">
+                        <i class="bi bi-calendar-week me-1"></i>Last 7 Days
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" onclick="setDateFilter('last_30_days')">
+                        <i class="bi bi-calendar-month me-1"></i>Last 30 Days
+                    </button>
+                </div>
+                <small class="text-muted ms-2">Quick filters for common date ranges</small>
+            </div>
+        </div>
+    </div>
 
     <?php include('admin_footer.php')?>
 </body>
